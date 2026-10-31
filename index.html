@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stones Unturned</title>
+  <meta name="description" content="A personal map of things worth turning over.">
+  <meta name="theme-color" content="#f1eee8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Stones">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
+  <link rel="stylesheet" href="style.css?v=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Stones Unturned</div>
+    <button class="sync" id="sync" style="border:0;background:none"></button>
+    <button class="city-btn" id="city-btn" aria-label="Change city">📍 <span id="city-name">London</span> ▾</button>
+    <button class="icon-btn" id="menu-btn" aria-label="Menu">☰</button>
+  </header>
+
+  <main>
+    <section class="view" id="view-map">
+      <div id="map"></div>
+      <div class="map-top"><div class="chips" id="map-chips"></div></div>
+      <div class="map-count" id="map-count"></div>
+      <div class="map-fabs">
+        <button class="fab" id="fab-city" aria-label="Back to city" title="Back to city">🏙️</button>
+        <button class="fab" id="fab-locate" aria-label="Where am I" title="Where am I">◎</button>
+        <button class="fab primary" id="fab-add" aria-label="New Event" title="New Event (or long-press the map)">＋</button>
+      </div>
+      <div class="crosshair hidden" id="crosshair">📍</div>
+      <div class="pickbar hidden" id="pickbar"><p>Move the map so the pin sits on the spot.</p><button class="btn ghost" id="pick-cancel">Cancel</button><button class="btn primary" id="pick-ok">Use this spot</button></div>
+    </section>
+
+    <section class="view hidden" id="view-events">
+      <div class="list-head">
+        <div class="searchrow">
+          <input class="search" id="q" type="search" placeholder="Search Events, venues, tags…" autocomplete="off">
+          <button class="icon-btn" id="list-add" aria-label="New Event" style="width:42px;height:42px">＋</button>
+        </div>
+        <div class="searchrow" style="padding-top:8px">
+          <select class="select" id="sort" aria-label="Sort">
+            <option value="ending">Ending soonest</option>
+            <option value="added">Recently added</option>
+            <option value="score">Most interested</option>
+            <option value="near">Nearest</option>
+            <option value="az">A–Z</option>
+          </select>
+          <select class="select" id="scope" aria-label="Which cities">
+            <option value="city">This city</option>
+            <option value="all">All cities</option>
+          </select>
+        </div>
+        <div class="chips" id="list-chips"></div>
+        <div class="segs" id="segs"></div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <section class="view hidden" id="view-calendar">
+      <div class="cal-head">
+        <div class="cal-top">
+          <h2 id="cal-title"></h2>
+          <button class="icon-btn" id="cal-prev" aria-label="Previous week">‹</button>
+          <button class="btn sm" id="cal-today">Today</button>
+          <button class="icon-btn" id="cal-next" aria-label="Next week">›</button>
+        </div>
+        <div class="week" id="week"></div>
+      </div>
+      <div class="day-tools">
+        <strong id="day-label" style="width:100%;font-size:14px"></strong>
+        <button class="btn sm" id="cal-add">＋ Add</button>
+        <button class="btn sm" id="cal-route">🧭 Route</button>
+        <button class="btn sm" id="cal-ics">⤓ Export</button>
+        <button class="btn sm" id="cal-claude">✦ Plan with Claude</button>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="agenda" id="agenda"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" role="tablist">
+    <button data-tab="map" role="tab"><span class="ti">🗺️</span>Map</button>
+    <button data-tab="events" role="tab"><span class="ti">🪨</span>Events</button>
+    <button data-tab="calendar" role="tab"><span class="ti">📅</span>Calendar</button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="sheet" id="sheet" aria-label="Event details">
+    <div class="grab"></div>
+    <button class="icon-btn close" aria-label="Close">✕</button>
+    <div class="sheet-scroll"></div>
+  </aside>
+  <div class="scrim modal-scrim" id="modal-scrim"></div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+  <div class="toast" id="toast"></div>
+  <div class="onboard hidden" id="onboard"></div>
+
+  <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>
