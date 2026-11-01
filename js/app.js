@@ -267,6 +267,7 @@ const SEGS = [
   ['active', 'Active', (e) => isLive(e)],
   ['new', 'New', (e) => isNew(e)],
   ['soon', 'Ending soon', (e) => isSoon(e)],
+  ['check', 'To check', (e) => isLive(e) && !!e.check],
   ['todo', 'To do', (e) => isLive(e) && !e.done],
   ['done', 'Done', (e) => e.done],
   ['archived', 'Archived', (e) => isArchived(e)],
@@ -282,7 +283,7 @@ function renderEvents() {
   if (q) {
     const words = q.split(/\s+/);
     evs = evs.filter((e) => {
-      const hay = [e.title, e.venue, e.address, e.description, e.why, e.notes, (e.tags || []).join(' '), colById(e.collectionId)?.name, e.price].join(' ').toLowerCase();
+      const hay = [e.title, e.venue, e.address, e.description, e.why, e.notes, e.check, (e.tags || []).join(' '), colById(e.collectionId)?.name, e.price].join(' ').toLowerCase();
       return words.every((w) => hay.includes(w));
     });
   }
@@ -303,6 +304,7 @@ function renderEvents() {
   grid.innerHTML = evs.map((e) => {
     const n = daysLeft(e);
     const badges = [isNew(e) && '<span class="badge new">new</span>', isSoon(e) && `<span class="badge soon">${n <= 0 ? 'last day' : `${n}d left`}</span>`,
+      e.check && isLive(e) && '<span class="badge check">check</span>',
       e.done && '<span class="badge done">done</span>', isArchived(e) && `<span class="badge off">${e.status === 'dismissed' ? 'not for me' : 'over'}</span>`].filter(Boolean).join('');
     const dist = ui.list.sort === 'near' && e.lat != null ? ` · ${distKm(origin, e).toFixed(1)} km` : '';
     return `<button class="card ${e.done ? 'done' : ''} ${isArchived(e) ? 'off' : ''}" data-id="${esc(e.id)}">
@@ -359,6 +361,7 @@ function renderDetail() {
       </div>
       <div class="d-when ${isSoon(ev) ? 'meta soon' : ''}"><b>${esc(whenText(ev))}</b>${ev.free ? ' · Free' : ev.price ? ` · ${esc(ev.price)}` : ''}</div>
       ${statusNote ? `<div class="status-note">${statusNote}</div>` : ''}
+      ${ev.check ? `<div class="check-note"><div><b>Worth checking before you go</b><br>${esc(ev.check)}</div><button class="btn sm" id="d-checked">Looks right ✓</button></div>` : ''}
       <div class="actions" style="grid-template-columns:repeat(${url ? 5 : 4},1fr)">
         <button class="act" id="d-cal"><span class="ai">📅</span>${inCal.length ? `In calendar` : 'Calendar'}</button>
         <button class="act ${ev.done ? 'on' : ''}" id="d-done"><span class="ai">✓</span>${ev.done ? 'Done!' : 'Mark done'}</button>
@@ -397,6 +400,7 @@ function renderDetail() {
   $('#d-cal', s).onclick = () => addToCalendar(ev);
   $('#d-done', s).onclick = () => { const done = !ev.done; store.patch('events', ev.id, { done, doneAt: done ? nowIso() : null }); toast(done ? 'Marked done ✓' : 'Unmarked'); };
   $('#d-map', s).onclick = () => showOnMap(ev);
+  const chk = $('#d-checked', s); if (chk) chk.onclick = () => { const was = ev.check; store.patch('events', ev.id, { check: null }); toast('Marked as checked', { label: 'Undo', fn: () => store.patch('events', ev.id, { check: was }) }); };
   $('#d-score', s).onclick = (e) => { const b = e.target.closest('button'); if (!b) return; const v = +b.dataset.s; store.patch('events', ev.id, { score: ev.score === v ? null : v }); };
   for (const b of $$('[data-sess]', s)) b.onclick = () => addSessionSlot(ev, sessions[+b.dataset.sess]);
   $('#d-notes', s).onchange = (e) => store.patch('events', ev.id, { notes: e.target.value });
